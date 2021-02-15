@@ -7,6 +7,20 @@
     </head>
     <body>
         <main>
+            <button id='btn-against-ai'>Against AI</button>
+            <button id='btn-against-player' style="display:none">Against player</button>
+
+            <div id='players'>
+                <div id='player1'>
+                    <span>Name of player x:</span>
+                    <input type="text" name="" placeholder="Player x" maxlength="10"/>
+                </div>
+                <div id='player2'>
+                    <span>Name of player o:</span>
+                    <input type="text" name="" placeholder="Player o" maxlength="10"/>
+                </div>
+            </div>
+            <div id='announcement'></div>
             <div id="game-board-container">
             </div>
             <button id="btn-new-game">New Game</button>

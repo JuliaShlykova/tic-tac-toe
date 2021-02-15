@@ -1,37 +1,31 @@
-'use strict'
-//creating modules for something we need in one 
-const gameboard = (()=>{
+const DOM = (()=>{
+    const player1 = ()=>(document.querySelector('#player1>input').value)?document.querySelector('#player1>input').value:'Player x';
+    const player2 = ()=>(document.querySelector('#player2>input').value)?document.querySelector('#player2>input').value:'Player o';
+    const announcement = ()=>document.querySelector('#announcement');
+    const NewGameBtn = document.querySelector('#btn-new-game');
+    const againstAIBtn = document.querySelector('#btn-against-ai');
+    const againstPlayerBtn = document.querySelector('#btn-against-player');
+    return {player1,player2,announcement,NewGameBtn,againstAIBtn,againstPlayerBtn};
+})();
+const gameBoard = (()=>{
     let gameBoard = [];
-    for (let i=0;i<9;i++){
+    //to change area later
+    for(let i=0;i<9;i++){
         gameBoard.push('');
-    }
-    let toggle = 'x';
-    const computerMove = ()=>{
-        let arr = gameboard.gameBoard;
-        let newArr = [];
-        for(let i=0;i<9;i++){
-            if(arr[i]==""){
-                newArr.push(i);
-            }
-        }
-        let randomIndex = newArr[Math.floor(Math.random()*newArr.length)];
-        let cell = document.querySelector(`[index-for-array="${randomIndex}"]`);
-        cell.textContent = 'o';
-        arr[randomIndex]='o';
-        gameboard.toggle = 'x';
-        displayController.endOfGame();
-    }
+    };
+    let sign = 'x';
+    const getGameBoard = ()=>gameBoard;
+    const getSign = ()=>sign;
+    //construct  gameboard to render
+    const oppositeSign = ()=>{sign = (sign=='x')?'o':'x';};
     const constructBoard = ()=>{
         //add event click to cells
-        
         function renderValue(){
-            if (displayController.indicatorEndGame&&this.textContent==''){
-                this.textContent = gameboard.toggle;
-                gameboard.gameBoard[this.getAttribute('index-for-array')] = gameboard.toggle;
-                gameboard.toggle = (gameboard.toggle=='x')?'o':'x';
-                displayController.endOfGame();
-                computerMove();
-                //displayController.endOfGame();
+            if (!displayController.getGameIsOver()&&this.textContent==''){
+                this.textContent = sign;
+                gameBoard[this.getAttribute('index-for-array')] = sign;
+                displayController.checkGame();
+                oppositeSign();
             }
         }
         //creating game board cells
@@ -44,84 +38,129 @@ const gameboard = (()=>{
             gameBoardContainer.appendChild(cell);
         }
     };
-    constructBoard();
-
-    return{
-        gameBoard,
-        toggle,
-    }
-})();
-const displayController = (()=>{
-    let indicatorEndGame = 1;
-    const startNewGame = ()=>{
-        displayController.indicatorEndGame = 1;
-        gameboard.gameBoard = []
-        for (let i=0;i<9;i++){
-            gameboard.gameBoard.push('');
+    const init = ()=>{
+        gameBoard = [];
+        //to change area later
+        for(let i=0;i<9;i++){
+            gameBoard.push('');
         };
-        let cells = document.querySelector('#game-board-container').childNodes;
-        cells.forEach(cell=>cell.textContent='');
-        gameboard.toggle = 'x';
-        
+        sign = 'x';
+        constructBoard();
+        DOM.announcement().textContent = `${DOM.player1()}'s turn`;
     }
-    const btnNewGame = document.querySelector('#btn-new-game');
-    btnNewGame.addEventListener('click',startNewGame);
-    const endOfGame=()=>{
-        let arr = gameboard.gameBoard;
-        console.log(arr);
-        if ((arr[0]!="")&&(arr[0]==arr[4])&&(arr[0]==arr[8])){
-            console.log('here');
-            alert(`Player ${arr[0]} is a winner`);
-            displayController.indicatorEndGame = 0;
-            return;
-        }
-        else if ((arr[2]!="")&&(arr[2]==arr[4])&&(arr[2]==arr[6])){
-            alert(`Player ${arr[2]} is a winner`);
-            displayController.indicatorEndGame = 0;
-            return;
-        }
-        else{
-            for(let i=0;i<=6;i++){
-                if (arr[i]!=""){
-                    if (i%3==0){
-                        if((arr[i]==arr[i+1])&&(arr[i]==arr[i+2])){
-                            alert(`Player ${arr[i]} is a winner`);
-                            displayController.indicatorEndGame = 0;
-                            return;
-                        }
-                    }
-                    if (i==0||i==1||i==2){
-                        if((arr[i]==arr[i+3])&&(arr[i]==arr[i+6])){
-                            alert(`Player ${arr[i]} is a winner`);
-                            displayController.indicatorEndGame = 0;
-                            return;
-                        }
-                    }
-                    
-                }
+    return {init, getSign, getGameBoard, oppositeSign};
+})();
+gameBoard.init();
+
+//an object to control flow of the game
+const displayController = (()=>{
+    let gameIsOver = false;
+    let computerMove = false;
+    let computerTurn = false;
+    const getGameIsOver = ()=>gameIsOver;
+    //random choices of computer
+    const computerMoveAction = ()=>{
+        let arr = gameBoard.getGameBoard();
+        let newArr = [];
+        for(let i=0;i<9;i++){
+            if(arr[i]==""){
+                newArr.push(i);
             }
         }
-        if (arr.every(el=>(el!=""))){
-            alert ('drawn game!');
-            displayController.indicatorEndGame = 0;
-            return;
+        let randomIndex = newArr[Math.floor(Math.random()*newArr.length)];
+        let cell = document.querySelector(`[index-for-array="${randomIndex}"]`);
+        cell.click();
+    }
+    //function that checks if win
+    const checkGame = ()=>{
+        let winner = gameBoard.getSign();
+        const boardArr = gameBoard.getGameBoard();
+        //checking all possible combinations
+        (function(){
+            if ((boardArr[0]!="")&&(boardArr[0]==boardArr[4])&&(boardArr[0]==boardArr[8])){
+                gameIsOver = true;
+                return;
+            }
+            else if ((boardArr[2]!="")&&(boardArr[2]==boardArr[4])&&(boardArr[2]==boardArr[6])){
+                gameIsOver = true;
+                return;
+            }
+            else{
+                for(let i=0;i<=6;i++){
+                    if (boardArr[i]!=""){
+                        if (i%3==0){
+                            if((boardArr[i]==boardArr[i+1])&&(boardArr[i]==boardArr[i+2])){
+                                gameIsOver = true
+                                return;
+                            }
+                        }
+                        if (i==0||i==1||i==2){
+                            if((boardArr[i]==boardArr[i+3])&&(boardArr[i]==boardArr[i+6])){
+                                gameIsOver = true
+                                return;
+                            }
+                        }
+                        
+                    }
+                }
+            }
+            if (boardArr.every(v => v!='')){
+                gameIsOver = true;
+                winner = '';
+            }
+        })();
+        if (gameIsOver){
+            if (!winner){
+                DOM.announcement().textContent = `Game is over. Draw`;
+            }
+            else {
+                DOM.announcement().textContent = `${(winner=='x')?DOM.player1():DOM.player2()} has won`;
+            }
         }
-
+        else{
+            if(computerMove){
+                if(computerTurn){
+                    computerTurn = false;
+                    gameBoard.oppositeSign();
+                    computerMoveAction();
+                    gameBoard.oppositeSign();
+                }
+                else{
+                    computerTurn = true;
+                    DOM.announcement().textContent = `${DOM.player1()}'s turn`;
+                }
+            }
+            else{
+                DOM.announcement().textContent = `${(winner=='x')?DOM.player2():DOM.player1()}'s turn`;
+            }
+        }
     }
-
-    return{
-        endOfGame,
-        indicatorEndGame,
+    const startNewGame = ()=>{
+        gameIsOver = false;
+        let gameBoardContainer = document.querySelector('#game-board-container');
+        while(gameBoardContainer.firstChild){
+            gameBoardContainer.removeChild(gameBoardContainer.firstChild);
+        }
+        gameBoard.init();
     }
+    //add functions to buttons
+    DOM.NewGameBtn.addEventListener('click',startNewGame);
+    DOM.againstAIBtn.addEventListener('click',function(){
+        startNewGame();
+        computerMove = true;
+        computerTurn = true;
+        this.style.display = "none";
+        DOM.againstPlayerBtn.removeAttribute('style');
+        document.querySelector('#player2>input').value = 'computer';
+        document.querySelector('#player2>input').setAttribute('disabled','');
+    });
+    DOM.againstPlayerBtn.addEventListener('click',function(){
+        startNewGame();
+        computerMove = false;
+        this.style.display = "none";
+        DOM.againstAIBtn.removeAttribute('style');
+        document.querySelector('#player2>input').removeAttribute('disabled');
+        document.querySelector('#player2>input').value = '';
+    });
+    return {getGameIsOver,checkGame,}
 })();
-//creating factor function for multiple objects
-const Player = (name)=>{
-
-    return {
-        name,
-    }
-}
-
-
-
-
