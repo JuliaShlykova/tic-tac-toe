@@ -137,6 +137,7 @@ const displayController = (()=>{
     }
     const startNewGame = ()=>{
         gameIsOver = false;
+        computerTurn = true;
         let gameBoardContainer = document.querySelector('#game-board-container');
         while(gameBoardContainer.firstChild){
             gameBoardContainer.removeChild(gameBoardContainer.firstChild);
