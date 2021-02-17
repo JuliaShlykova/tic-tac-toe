@@ -211,23 +211,6 @@ const displayController = (()=>{
                 return (winner=='x')?'x':'o';
             }
         }
-        // else{
-        //     if(computerMove){
-        //         if(computerTurn){
-        //             computerTurn = false;
-        //             gameBoard.oppositeSign();
-        //             computerMoveAction();
-        //             gameBoard.oppositeSign();
-        //         }
-        //         else{
-        //             computerTurn = true;
-        //             DOM.announcement().textContent = `${DOM.player1()}'s turn`;
-        //         }
-        //     }
-        //     else{
-        //         DOM.announcement().textContent = `${(winner=='x')?DOM.player2():DOM.player1()}'s turn`;
-        //     }
-        // }
     }
     const startNewGame = ()=>{
         gameIsOver = false;
